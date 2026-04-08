@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduBridge - Mentor Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">EduBridge Mentor</div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a class="nav-link active" data-target="upload-section">📤 Upload Hub</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-target="doubts-section">👩‍🏫 Answer Doubts</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-target="chat-section">💬 Chat</a>
+                </li>
+            </ul>
+            <div class="sidebar-footer">
+                <button id="logoutBtn" class="btn btn-secondary">Logout</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="header-bar">
+                <h2>Mentor Dashboard</h2>
+                <div class="user-info">Welcome, <span id="userName">Mentor</span></div>
+            </div>
+
+            <!-- Upload Section -->
+            <section id="upload-section" class="section-view active">
+                <h3>Upload New Resource</h3>
+                <div class="card" style="max-width: 600px; margin-bottom: 2rem;">
+                    <form id="uploadForm">
+                        <div class="form-group">
+                            <label>Resource Title</label>
+                            <input type="text" id="resTitle" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Resource Type</label>
+                            <select id="resType" class="form-control" required>
+                                <option value="pdf">PDF Document</option>
+                                <option value="video">Video File</option>
+                                <option value="link">External Link</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="fileGroup">
+                            <label>Upload File</label>
+                            <input type="file" id="resFile" class="form-control">
+                        </div>
+                        <div class="form-group" id="linkGroup" style="display:none;">
+                            <label>External URL (e.g. YouTube Link)</label>
+                            <input type="url" id="resLink" class="form-control">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Publish Resource</button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Doubts Section -->
+            <section id="doubts-section" class="section-view">
+                <h3>Student Doubts</h3>
+                <div id="doubtsList">
+                    <!-- Doubts injected here -->
+                </div>
+            </section>
+
+            <!-- Chat Section -->
+            <section id="chat-section" class="section-view">
+                <h3>Direct Messaging</h3>
+                <div style="display:flex; gap:1rem;">
+                    <div style="width:250px; background:white; border-radius:8px; border:1px solid var(--border-color); padding:1rem;" id="userList">
+                        <h4>Students</h4>
+                        <!-- User list injected here -->
+                    </div>
+                    <div class="chat-container" style="flex-grow:1;">
+                        <div class="chat-history" id="chatHistory">
+                            <p style="text-align:center; color:var(--text-muted); margin-top:2rem;">Select a student to chat</p>
+                        </div>
+                        <div class="chat-input-area" id="chatInputArea" style="display:none;">
+                            <input type="text" id="chatMessage" class="form-control" placeholder="Type a message...">
+                            <button id="sendMsgBtn" class="btn btn-primary" style="width:auto;">Send</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="/js/common.js"></script>
+    <script src="/js/mentor.js"></script>
+</body>
+</html>
