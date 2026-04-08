@@ -1,30 +1,18 @@
-const mysql = require('mysql2');
+const mongoose = require('mongoose');
 require('dotenv').config();
 
-const pool = mysql.createPool({
-    host: process.env.DB_HOST || 'localhost',
-    user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || '',
-    database: process.env.DB_NAME || 'edubridge',
-    port: process.env.DB_PORT || 3306,
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0
-});
-
-const promisePool = pool.promise();
-
-pool.getConnection((err, connection) => {
-    if (err) {
-        if (err.code === 'ER_BAD_DB_ERROR') {
-            console.error('Database "edubridge" does not exist. Please run init.sql first.');
-        } else {
-            console.error('Database connection failed: ' + err.stack);
+const connectDB = async () => {
+    try {
+        const uri = process.env.MONGO_URI;
+        if (!uri) {
+            console.error('MONGO_URI is undefined! Please set it in your environment variables.');
+            return;
         }
-    } else {
-        console.log('Connected to MySQL Database "edubridge" successfully.');
-        connection.release();
+        await mongoose.connect(uri);
+        console.log('Connected to MongoDB successfully!');
+    } catch (err) {
+        console.error('Database connection failed:', err);
     }
-});
+};
 
-module.exports = promisePool;
+connectDB();

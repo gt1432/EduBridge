@@ -1,25 +1,19 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../database');
+const Doubt = require('../models/Doubt');
+const Reply = require('../models/Reply');
 
-// Middleware to check authentication
 const isAuth = (req, res, next) => {
     if (req.session.userId) next();
     else res.status(401).json({ error: 'Please login first' });
 };
 
-// Post a new doubt (Student only)
 router.post('/', isAuth, async (req, res) => {
-    if (req.session.role !== 'student') {
-        return res.status(403).json({ error: 'Only students can ask doubts' });
-    }
-
-    const { question } = req.body;
+    if (req.session.role !== 'student') return res.status(403).json({ error: 'Only students can ask doubts' });
+    
     try {
-        await db.query(
-            'INSERT INTO doubts (question, asked_by) VALUES (?, ?)',
-            [question, req.session.userId]
-        );
+        const newDoubt = new Doubt({ question: req.body.question, asked_by: req.session.userId });
+        await newDoubt.save();
         res.status(201).json({ message: 'Doubt posted successfully' });
     } catch (err) {
         console.error(err);
@@ -27,20 +21,16 @@ router.post('/', isAuth, async (req, res) => {
     }
 });
 
-// Post a reply (Mentor only)
 router.post('/:id/reply', isAuth, async (req, res) => {
-    if (req.session.role !== 'mentor') {
-        return res.status(403).json({ error: 'Only mentors can reply' });
-    }
-
-    const doubtId = req.params.id;
-    const { reply } = req.body;
+    if (req.session.role !== 'mentor') return res.status(403).json({ error: 'Only mentors can reply' });
 
     try {
-        await db.query(
-            'INSERT INTO replies (doubt_id, mentor_id, reply) VALUES (?, ?, ?)',
-            [doubtId, req.session.userId, reply]
-        );
+        const newReply = new Reply({
+            doubt_id: req.params.id,
+            mentor_id: req.session.userId,
+            reply: req.body.reply
+        });
+        await newReply.save();
         res.status(201).json({ message: 'Reply posted successfully' });
     } catch (err) {
         console.error(err);
@@ -48,28 +38,20 @@ router.post('/:id/reply', isAuth, async (req, res) => {
     }
 });
 
-// Get all doubts with their replies
 router.get('/', isAuth, async (req, res) => {
     try {
-        const [doubts] = await db.query(`
-            SELECT d.*, u.name as student_name 
-            FROM doubts d 
-            JOIN users u ON d.asked_by = u.id 
-            ORDER BY d.created_at DESC
-        `);
-
-        // Get replies for each doubt
+        const doubts = await Doubt.find().populate('asked_by', 'name').sort({ created_at: -1 }).lean();
+        
         for (let doubt of doubts) {
-            const [replies] = await db.query(`
-                SELECT r.*, u.name as mentor_name 
-                FROM replies r 
-                JOIN users u ON r.mentor_id = u.id 
-                WHERE r.doubt_id = ?
-                ORDER BY r.created_at ASC
-            `, [doubt.id]);
-            doubt.replies = replies;
+            doubt.student_name = doubt.asked_by ? doubt.asked_by.name : 'Unknown';
+            doubt.id = doubt._id; // Front-end matching
+            
+            const replies = await Reply.find({ doubt_id: doubt._id }).populate('mentor_id', 'name').sort({ created_at: 1 }).lean();
+            doubt.replies = replies.map(r => ({
+                ...r,
+                mentor_name: r.mentor_id ? r.mentor_id.name : 'Unknown'
+            }));
         }
-
         res.json(doubts);
     } catch (err) {
         console.error(err);
